@@ -4,6 +4,7 @@ import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.After;
+import org.aspectj.lang.annotation.Pointcut;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,7 +18,10 @@ public class ExecutionTimeAspect {
     private Map<String, Long> functionStartTimes = new HashMap<>();
     private Map<String, List<Long>> functionExecTimes = new HashMap<>();
 
-    @Before("@annotation(ExecutionTimeAnnotation)")
+    @Pointcut("execution( * *(..))")
+    public void publicMethod() {}
+
+    @Before("publicMethod() && @annotation(ExecutionTimeAnnotation)")
     public void logBeforeMethod(JoinPoint joinPoint) {
         String functionName = joinPoint.getSignature().getName();
         System.out.println("Logging - Method: " + functionName);
@@ -25,12 +29,11 @@ public class ExecutionTimeAspect {
         WatcherUtil.addStartTime(functionName, startTime);
     }
 
-    @After("@annotation(ExecutionTimeAnnotation)")
+    @After("publicMethod() && @annotation(ExecutionTimeAnnotation)")
     public void logAfterMethod(JoinPoint joinPoint) {
         String functionName = joinPoint.getSignature().getName();
         long endTime = System.currentTimeMillis();
         WatcherUtil.saveExecTime(functionName, endTime);
     }
-
 
 }
